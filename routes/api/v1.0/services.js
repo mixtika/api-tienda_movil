@@ -4,7 +4,10 @@ var router = express.Router();
 var fs = require('fs');
 //var _ = require("underscore");
 var RESTAURANT = require("../../../database/collections/restaurant");
+
 var USER = require("../../../database/collections/users");
+
+
 var MENU = require("../../../database/collections/menus");
 var ORDER = require("../../../database/collections/orders")
 
@@ -276,7 +279,20 @@ router.put(/home\/[a-z0-9]{1,}$/, verifytoken,(req, res) => {
 });
 module.exports = router;
 
-//API RESTAURANT
+//API TIENDA MOVIL
+
+router.get('/listx', (req, res) => {
+USER.find().exec( (error, docs) => {
+    if (docs != null) {
+        res.status(200).json({"lista": docs});
+        return;
+    }
+    res.status(200).json({
+      "msn" : "No existe el recurso"
+    });
+});
+});
+
 
 router.post('/restaurant', (req, res) => {
   var data=req.body;

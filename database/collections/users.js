@@ -4,7 +4,7 @@ var Schema = mon.Schema;
 var userSchema = new Schema({
   username : String,
   password : String,
-  id_restaurant : String
+  id_user_google : String
 });
 var user = mongoose.model("user", userSchema);
 module.exports = user;
