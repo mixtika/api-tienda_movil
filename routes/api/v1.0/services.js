@@ -3,16 +3,17 @@ var multer = require('multer');
 var router = express.Router();
 var fs = require('fs');
 //var _ = require("underscore");
-var RESTAURANT = require("../../../database/collections/restaurant");
+var RESTAURANT = require("../../../database/collections/apptienda");
 
 var USER = require("../../../database/collections/users");
 
+var DATA = require("../../../database/collections/datas");
 
 var MENU = require("../../../database/collections/menus");
 var ORDER = require("../../../database/collections/orders")
 
 
-var Home = require("../../../database/collections/restaurant");
+var Home = require("../../../database/collections/apptienda");
 
 var Img = require("../../../database/collections/img");
 
@@ -390,6 +391,28 @@ router.post("/login", (req, res, next) => {
 });
 
 /***********CODIGO ORDEN************************/
+router.post('/save_data', (req, res) => {
+  //res.status(200).json({"id":req.query});
+  var data=req.query;
+  //data['orderdate'] = new Date();
+  var neworder = new DATA(data);
+  neworder.save().then( rr => {
+    res.status(200).json({
+      "id": rr._id,
+      "msn": "agregado con exito"
+    });
+  });
+});
+
+
+
+
+
+
+
+
+
+
 router.post('/save_order', (req, res) => {
   res.status(200).json({"id":req.query});
   var data=req.query;
@@ -447,12 +470,12 @@ router.post('/upload', function(req, res, next) {
     console.log(req);
     /*for(var x=0;x<req.files.length;x++) {
         //copiamos el archivo a la carpeta definitiva de fotos
-       fs.createReadStream('./uploads/'+req.files[x].filename).pipe(fs.createWriteStream('./public/menu/'+req.files[x].originalname)); 
+       fs.createReadStream('./uploads/'+req.files[x].filename).pipe(fs.createWriteStream('./public/menu/'+req.files[x].originalname));
        //borramos el archivo temporal creado
-       fs.unlink('./uploads/'+req.files[x].filename); 
-    }  
+       fs.unlink('./uploads/'+req.files[x].filename);
+    }
     var pagina='<!doctype html><html><head></head><body>'+
                '<p>Se subieron las fotos</p>'+
                '<br><a href="/">Retornar</a></body></html>';
-      res.send(pagina);*/        
+      res.send(pagina);*/
 });
