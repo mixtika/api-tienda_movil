@@ -1,49 +1,85 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+const express = require('express');
+const fileUpload = require('express-fileupload');
+var fs=require('fs');
+const app = express();
+app.use(fileUpload());
 
-var index = require('./routes/index');
-var service = require('./routes/api/v1.0/services');
+var PRODUCTO = require("./database/collections/productos");
+var TEST = require("./database/collections/tests");
 
-var app = express();
+app.post('/upload',(req,res) => {
+  var params = req.body;
+  let EDFile = req.files.file;
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+  var _id = params.id;
+  var _name = params.name;
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+  EDFile.mv('./public/imgs/'+ _id + _name + EDFile.name, err => {
+    if(err) return res.status(500).send({ message : err });
 
-app.use('/', index);
-app.use('/api/v1.0/', service);
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+      var newTest = new TEST(params);
+      newTest.save().then( rr => {
+        res.status(200).json({
+          "id": rr._id,
+          "msn": "Agregado con exito"
+        });
+      });
+
+      //return res.status(200).send({ message : _id });
+    });
+
+
+
+
+
 });
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+
+app.post('/uploadx',(req,res) => {
+  var data=req.query;
+  let foto = data['foto'];
+  let buff = new Buffer(foto, 'base64');
+  let text = buff.toString('ascii');
+  fs.writeFile("./public/imgs/out.jpg", text, "binary", function (err) {
+    console.log(err);//writes out file without error, but it's not a valid image
 });
 
-module.exports = app;
-var port = 3000;
-app.listen(port, () => {
-  console.log("server running in " + port);
+res.status(200).json({
+  "msn" : "ok"
 });
+
+});
+
+function randomIntInc(low, high) {
+  return Math.floor(Math.random() * (high - low + 1) + low)
+}
+
+app.post('/guardar_producto', (req, res) => {
+  //res.status(200).json({"id":req.query});
+  var data=req.query;
+  data['fecha_registro'] = new Date();
+  data['foto'] = randomIntInc(1000,1000000)+".jpg";
+  var newproducto = new PRODUCTO(data);
+  newproducto.save().then( rr => {
+    res.status(200).json({
+      "id": rr._id,
+      "msn": "Producto agregado con exito"
+    });
+  });
+});
+
+app.get('/lista_productos', (req, res) => {
+  var data=req.query;
+  PRODUCTO.find({usuario: data.usuario}).exec( (error, docs) => {
+    if (docs != null) {
+        res.status(200).json({"orders": docs});
+        return;
+    }
+    res.status(200).json({
+      "msn" : "No existe el recurso"
+    });
+});
+});
+
+app.listen(3000,() => console.log('Corriendo'))
