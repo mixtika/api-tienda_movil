@@ -1,4 +1,11 @@
-var express = require('express');
+
+const express = require('express');
+const fileUpload = require('express-fileupload');
+const app = express();
+app.use(fileUpload());
+
+
+
 var multer = require('multer');
 var router = express.Router();
 var fs = require('fs');
@@ -10,7 +17,7 @@ var USER = require("../../../database/collections/users");
 var DATA = require("../../../database/collections/datas");
 
 var MENU = require("../../../database/collections/menus");
-var ORDER = require("../../../database/collections/orders")
+var PRODUCTO = require("../../../database/collections/productos")
 
 
 var Home = require("../../../database/collections/apptienda");
@@ -19,7 +26,7 @@ var Img = require("../../../database/collections/img");
 
 var jwt = require("jsonwebtoken");
 
-
+/*
 var storage = multer.diskStorage({
   destination: "./public/avatars",
   filename: function (req, file, cb) {
@@ -27,12 +34,20 @@ var storage = multer.diskStorage({
     console.log(file);
     cb(null, "IMG_" + Date.now() + ".jpg");
   }
-});
-
+});*/
+/*
 var upload = multer({
   storage: storage
-}).single("img");;
+}).single("img");*/
 
+app.post('/uploadx',(req,res) => {
+    let EDFile = req.files.file
+    /*EDFile.mv(`./public/avatars/${EDFile.name}`,err => {
+        if(err) return res.status(500).send({ message : err })
+
+        return res.status(200).send({ message : 'File upload' })
+    })*/
+})
 
 //Middelware
 function verifytoken (req, res, next) {
@@ -399,45 +414,44 @@ router.post('/save_data', (req, res) => {
   neworder.save().then( rr => {
     res.status(200).json({
       "id": rr._id,
-      "msn": "agregado con exito"
+      "msn": "Usuario agregado con exito"
     });
   });
 });
 
-
-
-
-
-
-
-
-
-
-router.post('/save_order', (req, res) => {
-  res.status(200).json({"id":req.query});
+router.post('/guardar_producto', (req, res) => {
+  //res.status(200).json({"id":req.query});
   var data=req.query;
-  data['orderdate'] = new Date();
-  var neworder = new ORDER(data);
-  neworder.save().then( rr => {
+  data['fecha_registro'] = new Date();
+  data['foto'] = randomIntInc(1000,1000000)+".jpg";
+  var newproducto = new PRODUCTO(data);
+  newproducto.save().then( rr => {
     res.status(200).json({
       "id": rr._id,
-      "msn": "Orden agregado con exito"
+      "msn": "Producto agregado con exito"
     });
   });
 });
 
-router.get('/list_order', (req, res) => {
+function randomIntInc(low, high) {
+  return Math.floor(Math.random() * (high - low + 1) + low)
+}
+
+router.get('/lista_productos', (req, res) => {
   var data=req.query;
-  ORDER.find({id_restaurant: data.id_restaurant}).exec( (error, docs) => {
+  PRODUCTO.find({usuario: data.usuario}).exec( (error, docs) => {
     if (docs != null) {
         res.status(200).json({"orders": docs});
         return;
     }
     res.status(200).json({
-      "msn" : "No existe el recurso "
+      "msn" : "No existe el recurso"
     });
 });
 });
+
+
+
 /***********CODIGO MENU*************/
 router.post('/save_menu', (req, res) => {
   var data=req.query;

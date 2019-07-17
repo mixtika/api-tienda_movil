@@ -5,7 +5,8 @@ var userSchema = new Schema({
   nombres : String,
   apellidos : String,
   correo : String,
-  fono : String,
+  sexo : String,
+  edad : Number
 });
 var data = mongoose.model("data", userSchema);
 module.exports = data;
