@@ -4,6 +4,8 @@ var fs=require('fs');
 const app = express();
 app.use(fileUpload());
 
+app.use(express.static(__dirname + '/public'));
+
 var PRODUCTO = require("./database/collections/productos");
 var REGISTRO = require("./database/collections/registros");
 
@@ -83,6 +85,24 @@ app.post('/producto',(req,res) => {
   });
 });
 
+app.post('/mispublicaciones', (req, res) => {
+  var data=req.query;
+  REGISTRO.findOne({ correo: data.correo }).exec( (error, docs) => {
+      if (docs != null) {
+        PRODUCTO.find({ usuario: docs._id }).exec( (error, docs) => {
+            if (docs != null) {
+                res.status(200).json({ "productos" : docs });
+                return;
+            }
+        });
+      }
+      else {
+        res.status(200).json({
+          "msn": "Error"
+        });
+      }
+  });
+});
 
 app.post('/uploadx',(req,res) => {
   var data=req.query;
@@ -130,4 +150,4 @@ app.get('/lista_productos', (req, res) => {
 });
 });
 
-app.listen(3000,() => console.log('Corriendo'))
+app.listen(3000,() => console.log('♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥\n♥♥♥     CORRIENDO EN EL PUERTO 3000    ♥♥♥\n♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥♥'))
