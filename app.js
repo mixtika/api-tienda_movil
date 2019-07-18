@@ -182,27 +182,37 @@ app.post('/editcantidad', (req, res) => {
 
 /******************AGREGAR A FAVORITOS********************/
 app.post('/agregarfavorito', (req, res) => {
-  var params=req.query;
-  FAVORITO.findOne({ comprador : params.comprador, vendedor : params.vendedor, producto : params.producto  }).exec( (error, docs) => {
-            if (docs == null) {
-              var newfav = new FAVORITO(params);
-                newfav.save().then( rr => {
-                  res.status(200).json({ "favorito" : newfav });
-                });
-            }
-            else {
-              docs.cantidad=docs.cantidad + 1;
-              docs.save(function(error, documento){
-                          if(error){
-                            res.status(200).json({ "favorito" : null });
-                          }else{
-                             res.status(200).json({ "favorito" : docs });
-                          }
-                       });
-            }
-        });
+  var params=req.query
+  REGISTRO.findOne({ correo: params.correo }).exec( (error, docs) => {
+    if (docs != null) {
+      params['comprador']=docs._id;
+      FAVORITO.findOne({ comprador : docs._id, vendedor : params.vendedor, producto : params.producto  }).exec( (error, docs) => {
+                if (docs == null) {
+                  var newfav = new FAVORITO(params);
+                    newfav.save().then( rr => {
+                      res.status(200).json({ "favorito" : newfav });
+                    });
+                }
+                else {
+                  docs.cantidad=docs.cantidad + 1;
+                  docs.save(function(error, documento){
+                              if(error){
+                                res.status(200).json({ "favorito" : null });
+                              }else{
+                                 res.status(200).json({ "favorito" : docs });
+                              }
+                           });
+                }
+            });
+    }
+    else {
+      res.status(200).json({ "favorito" : null });
+    }
+  });
 });
 
+//REGISTRO.findOne({ correo: params.correo }).exec( (error, docs) => {
+  //  if (docs != null) {
 
 //db.people.find({"name": {$regex:".*fis", $options:"i"}},{name:1})
 
