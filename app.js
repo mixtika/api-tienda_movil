@@ -104,7 +104,7 @@ app.post('/mispublicaciones', (req, res) => {
   var data=req.query;
   REGISTRO.findOne({ correo: data.correo }).exec( (error, docs) => {
       if (docs != null) {
-        PRODUCTO.find({ usuario: docs._id }).exec( (error, docs) => {
+        PRODUCTO.find({ usuario: docs._id, estado: true }).exec( (error, docs) => {
             if (docs != null) {
                 res.status(200).json({ "productos" : docs });
                 return;
@@ -120,7 +120,7 @@ app.post('/mispublicaciones', (req, res) => {
 });
 
 app.post('/publicaciones', (req, res) => {
-  PRODUCTO.find().exec( (error, docs) => {
+  PRODUCTO.find({ estado: true }).exec( (error, docs) => {
             if (docs != null) {
                 res.status(200).json({ "productos" : docs });
                 return;
@@ -133,7 +133,7 @@ app.post('/publicaciones', (req, res) => {
 
 app.post('/buscarpub', (req, res) => {
   var params=req.query;
-  PRODUCTO.find({titulo: {$regex:".*"+ params.texto +"", $options:"i"}}).exec( (error, docs) => {
+  PRODUCTO.find({titulo: {$regex:".*"+ params.texto +"", $options:"i"},estado:true}).exec( (error, docs) => {
             if (docs != null) {
                 res.status(200).json({ "productos" : docs });
                 return;
@@ -144,7 +144,24 @@ app.post('/buscarpub', (req, res) => {
         });
 });
 
-
+app.post('/darbajapub', (req, res) => {
+  var params=req.query;
+  PRODUCTO.findOne({ _id : params.id }).exec( (error, docs) => {
+            if (docs != null) {
+              docs.estado=false;
+              docs.save(function(error, documento){
+                          if(error){
+                            res.status(200).json({ "producto" : null });
+                          }else{
+                             res.status(200).json({ "producto" : docs });
+                          }
+                       });
+            }
+            else {
+                res.status(200).json({ "producto" : null });
+            }
+        });
+});
 
 app.post('/buscarpubid', (req, res) => {
   var params=req.query;
