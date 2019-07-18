@@ -8,6 +8,7 @@ app.use(express.static(__dirname + '/public'));
 
 var PRODUCTO = require("./database/collections/productos");
 var REGISTRO = require("./database/collections/registros");
+var FAVORITO = require("./database/collections/favoritos");
 
 var TEST = require("./database/collections/tests");
 
@@ -53,6 +54,20 @@ app.post('/verificar', (req, res) => {
       });
     });
 });
+
+app.post('/buscarusuario', (req, res) => {
+  var params=req.query;
+  REGISTRO.find({ _id: params.id }).exec( (error, docs) => {
+      if (docs != null) {
+          res.status(200).json({"users": docs});
+          return;
+      }
+      res.status(200).json({
+        "users" : null
+      });
+    });
+});
+
 
 
 app.post('/producto',(req,res) => {
@@ -103,6 +118,93 @@ app.post('/mispublicaciones', (req, res) => {
       }
   });
 });
+
+app.post('/publicaciones', (req, res) => {
+  PRODUCTO.find().exec( (error, docs) => {
+            if (docs != null) {
+                res.status(200).json({ "productos" : docs });
+                return;
+            }
+            else {
+                res.status(200).json({ "productos" : null });
+            }
+        });
+});
+
+app.post('/buscarpub', (req, res) => {
+  var params=req.query;
+  PRODUCTO.find({titulo: {$regex:".*"+ params.texto +"", $options:"i"}}).exec( (error, docs) => {
+            if (docs != null) {
+                res.status(200).json({ "productos" : docs });
+                return;
+            }
+            else {
+                res.status(200).json({ "productos" : null });
+            }
+        });
+});
+
+
+
+app.post('/buscarpubid', (req, res) => {
+  var params=req.query;
+  PRODUCTO.find({ _id : params.id }).exec( (error, docs) => {
+            if (docs != null) {
+                res.status(200).json({ "producto" : docs });
+                return;
+            }
+            else {
+                res.status(200).json({ "producto" : null });
+            }
+        });
+});
+
+
+
+app.post('/editcantidad', (req, res) => {
+  var params=req.query;
+  PRODUCTO.findOne({ _id : params.id }).exec( (error, docs) => {
+            if (docs != null) {
+              docs.cantidad=docs.cantidad-1;
+              docs.save(function(error, documento){
+                          if(error){
+                            res.status(200).json({ "producto" : null });
+                          }else{
+                             res.status(200).json({ "producto" : docs });
+                          }
+                       });
+            }
+            else {
+                res.status(200).json({ "producto" : null });
+            }
+        });
+});
+
+/******************AGREGAR A FAVORITOS********************/
+app.post('/agregarfavorito', (req, res) => {
+  var params=req.query;
+  FAVORITO.findOne({ comprador : params.comprador, vendedor : params.vendedor, producto : params.producto  }).exec( (error, docs) => {
+            if (docs == null) {
+              var newfav = new FAVORITO(params);
+                newfav.save().then( rr => {
+                  res.status(200).json({ "favorito" : newfav });
+                });
+            }
+            else {
+              docs.cantidad=docs.cantidad + 1;
+              docs.save(function(error, documento){
+                          if(error){
+                            res.status(200).json({ "favorito" : null });
+                          }else{
+                             res.status(200).json({ "favorito" : docs });
+                          }
+                       });
+            }
+        });
+});
+
+
+//db.people.find({"name": {$regex:".*fis", $options:"i"}},{name:1})
 
 app.post('/uploadx',(req,res) => {
   var data=req.query;
