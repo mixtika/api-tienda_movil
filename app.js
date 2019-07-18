@@ -12,13 +12,10 @@ var TEST = require("./database/collections/tests");
 app.post('/upload',(req,res) => {
   var params = req.body;
   let EDFile = req.files.file;
-
   var _id = params.id;
   var _name = params.name;
-
   EDFile.mv('./public/imgs/'+ _id + _name + EDFile.name, err => {
     if(err) return res.status(500).send({ message : err });
-
       var newTest = new TEST(params);
       newTest.save().then( rr => {
         res.status(200).json({
@@ -31,7 +28,6 @@ app.post('/upload',(req,res) => {
 });
 
 app.post('/registro', (req, res) => {
-  //res.status(200).json({"id":req.query});
   var data=req.query;
   data['fecha_registro'] = new Date();
   var newregistro = new REGISTRO(data);
@@ -57,6 +53,35 @@ app.post('/verificar', (req, res) => {
 });
 
 
+app.post('/producto',(req,res) => {
+  var params = req.body;
+  let EDFile = req.files.file;
+  var _name = EDFile.name;
+  var _name_ale = randomIntInc(1000,1000000) + _name.substring(_name.lastIndexOf("."),_name.length);
+  params['foto'] = _name_ale;
+  params['estado'] = true;
+  params['fecha_registro'] = new Date();
+  REGISTRO.findOne({ correo: params.correo }).exec( (error, docs) => {
+      if (docs != null) {
+        params['usuario'] = docs._id;
+        EDFile.mv('./public/imgs/'+ _name_ale, err => {
+          if(err) return res.status(500).send({ message : err });
+            var newproducto = new PRODUCTO(params);
+              newproducto.save().then( rr => {
+                res.status(200).json({
+                  "id": rr._id,
+                  "msn": "Agregado con exito"
+              });
+            });
+          });
+      }
+      else {
+        res.status(200).json({
+          "msn": "Error"
+        });
+      }
+  });
+});
 
 
 app.post('/uploadx',(req,res) => {
