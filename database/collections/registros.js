@@ -11,5 +11,5 @@ var registrosSchema = new Schema({
   log: String,
   fecha_registro: Date
 });
-var registros = mongoose.model("data", registrosSchema);
+var registros = mongoose.model("registros", registrosSchema);
 module.exports = registros;

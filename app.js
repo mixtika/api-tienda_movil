@@ -5,6 +5,8 @@ const app = express();
 app.use(fileUpload());
 
 var PRODUCTO = require("./database/collections/productos");
+var REGISTRO = require("./database/collections/registros");
+
 var TEST = require("./database/collections/tests");
 
 app.post('/upload',(req,res) => {
@@ -24,15 +26,36 @@ app.post('/upload',(req,res) => {
           "msn": "Agregado con exito"
         });
       });
-
       //return res.status(200).send({ message : _id });
     });
-
-
-
-
-
 });
+
+app.post('/registro', (req, res) => {
+  //res.status(200).json({"id":req.query});
+  var data=req.query;
+  data['fecha_registro'] = new Date();
+  var newregistro = new REGISTRO(data);
+  newregistro.save().then( rr => {
+    res.status(200).json({
+      "id": rr._id,
+      "msn": "agregado con exito"
+    });
+  });
+});
+
+app.post('/verificar', (req, res) => {
+  var data=req.query;
+  REGISTRO.find({correo: data.correo}).exec( (error, docs) => {
+      if (docs != null) {
+          res.status(200).json({"users": docs});
+          return;
+      }
+      res.status(200).json({
+        "correo" : true
+      });
+    });
+});
+
 
 
 
